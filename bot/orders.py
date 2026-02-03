@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, Optional
 
 from .client import BinanceFuturesClient
+from .db import save_order
 from .validators import (
     OrderType,
     Side,
@@ -49,6 +50,11 @@ def build_and_place_order(
         price=v_price,
         time_in_force=v_tif,
     )
+    # Persist order for metrics / dashboard (best-effort, non-blocking for trading)
+    try:
+        save_order(response)
+    except Exception:
+        logger.exception("Failed to persist order to database.")
     return response
 
 
